@@ -307,21 +307,4 @@ Swagger UI is enabled only in the `Development` environment and uses the generat
 
 The local launch profile is intentionally HTTP-only for a simple reviewer setup. A production deployment should terminate HTTPS at the application host or a trusted reverse proxy.
 
-## Testing
-
-The automated suite focuses on behavior that is easy to get wrong:
-
-- required normalization formats and conservative no-op behavior;
-- postal-code extraction with and without a space;
-- postal fallback, missing postal code, and primary-address priority;
-- separation of `found`, `notFound`, and `failed` outcomes;
-- continuation of a batch after an upstream failure;
-- successful caching and the decision not to cache `notFound`;
-- persistence after recreating the EF Core context;
-- canonical postal cache keys;
-- concurrent equivalent-query deduplication;
-- in-flight cleanup after completion and failure;
-- diagnostic logs for outbound and reused requests.
-
-HTTP tests use deterministic message-handler stubs and cache tests use isolated SQLite databases. This keeps the suite fast, repeatable, and independent of public Nominatim availability and policy.
 
