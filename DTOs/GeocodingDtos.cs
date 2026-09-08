@@ -13,9 +13,11 @@ public sealed record GeocodeResponse(
 public sealed record GeocodeResult(
     string Id,
     string Address,
+    string Status,
     bool Found,
     string? Strategy,
     double? Latitude,
     double? Longitude,
     string? Name,
-    string? DisplayName);
+    string? DisplayName,
+    string? Error);

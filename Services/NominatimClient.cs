@@ -2,6 +2,7 @@ using System.Collections.Concurrent;
 using System.Diagnostics;
 using System.Globalization;
 using System.Net.Http.Json;
+using System.Text.Json;
 using GeocoderSolution.Configuration;
 using GeocoderSolution.DTOs;
 using Microsoft.Extensions.Options;
@@ -88,7 +89,7 @@ public sealed class NominatimClient : IDisposable
                 {
                     await Task.Delay(remainingDelay, cancellationToken);
                 }
-            } 
+            }
 
             _lastRequestTimestamp = Stopwatch.GetTimestamp();
 
@@ -100,9 +101,46 @@ public sealed class NominatimClient : IDisposable
                 "Sending outbound request to Nominatim for query {Query}",
                 address);
 
-            var response = await httpClient.GetFromJsonAsync<NominatimSearchResult[]>(
-                requestUri,
-                cancellationToken);
+            NominatimSearchResult[]? response;
+
+            try
+            {
+                response = await httpClient.GetFromJsonAsync<NominatimSearchResult[]>(
+                    requestUri,
+                    cancellationToken);
+            }
+            catch (OperationCanceledException exception)
+            {
+                _logger.LogWarning(
+                    exception,
+                    "Nominatim request timed out for query {Query}",
+                    address);
+                throw new NominatimUnavailableException(
+                    "The Nominatim request timed out.",
+                    exception);
+            }
+            catch (HttpRequestException exception)
+            {
+                _logger.LogWarning(
+                    exception,
+                    "Nominatim request failed for query {Query}; status code {StatusCode}",
+                    address,
+                    exception.StatusCode);
+                throw new NominatimUnavailableException(
+                    "Nominatim is temporarily unavailable.",
+                    exception);
+            }
+            catch (JsonException exception)
+            {
+                _logger.LogError(
+                    exception,
+                    "Nominatim returned invalid JSON for query {Query}",
+                    address);
+                throw new NominatimUnavailableException(
+                    "Nominatim returned an invalid response.",
+                    exception);
+            }
+
             var firstResult = response?.FirstOrDefault();
 
             if (firstResult is null)

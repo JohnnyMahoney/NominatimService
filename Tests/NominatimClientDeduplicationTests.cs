@@ -76,7 +76,7 @@ public sealed class NominatimClientDeduplicationTests
         };
         using var client = CreateClient(httpClient, new RecordingLogger<NominatimClient>());
 
-        await Assert.ThrowsAsync<HttpRequestException>(
+        await Assert.ThrowsAsync<NominatimUnavailableException>(
             () => client.SearchAsync("V5Z 1M2", CancellationToken.None));
         var result = await client.SearchAsync("V5Z 1M2", CancellationToken.None);
 

@@ -32,6 +32,7 @@ public sealed class GeocodingServiceFallbackTests
 
         var result = Assert.Single(response.Results);
         Assert.True(result.Found);
+        Assert.Equal("found", result.Status);
         Assert.Equal("postalCode", result.Strategy);
         Assert.Equal(
             ["999999 Fake Road, Vancouver, BC V5Z 1M2", "V5Z 1M2"],
@@ -62,6 +63,7 @@ public sealed class GeocodingServiceFallbackTests
 
         var result = Assert.Single(response.Results);
         Assert.False(result.Found);
+        Assert.Equal("notFound", result.Status);
         Assert.Null(result.Strategy);
         Assert.Single(fixture.Queries);
     }
@@ -95,6 +97,36 @@ public sealed class GeocodingServiceFallbackTests
         Assert.Null(result.Strategy);
         Assert.Null(result.Latitude);
         Assert.Null(result.Longitude);
+        Assert.Equal(2, fixture.Queries.Count);
+    }
+
+    [Fact]
+    public async Task GeocodeAsync_UpstreamFailureReturnsFailedAndContinuesBatch()
+    {
+        using var fixture = CreateFixture("__503__", PlaceResponse);
+        var request = new GeocodeRequest(
+        [
+            new AddressRequest("failed", "100 Failure Road, Vancouver, BC"),
+            new AddressRequest("next", "200 Success Road, Vancouver, BC")
+        ]);
+
+        var response = await fixture.Service.GeocodeAsync(request, CancellationToken.None);
+
+        Assert.Collection(
+            response.Results,
+            failed =>
+            {
+                Assert.Equal("failed", failed.Status);
+                Assert.False(failed.Found);
+                Assert.Null(failed.Strategy);
+                Assert.NotNull(failed.Error);
+            },
+            successful =>
+            {
+                Assert.Equal("found", successful.Status);
+                Assert.True(successful.Found);
+                Assert.Null(successful.Error);
+            });
         Assert.Equal(2, fixture.Queries.Count);
     }
 
@@ -228,11 +260,18 @@ public sealed class GeocodingServiceFallbackTests
             CancellationToken cancellationToken)
         {
             Queries.Add(GetQueryValue(request.RequestUri!, "q"));
+            var responseBody = _responses.Dequeue();
+
+            if (responseBody == "__503__")
+            {
+                return Task.FromResult(
+                    new HttpResponseMessage(HttpStatusCode.ServiceUnavailable));
+            }
 
             var response = new HttpResponseMessage(HttpStatusCode.OK)
             {
                 Content = new StringContent(
-                    _responses.Dequeue(),
+                    responseBody,
                     Encoding.UTF8,
                     "application/json")
             };

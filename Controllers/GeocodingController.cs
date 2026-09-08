@@ -11,7 +11,9 @@ public sealed class GeocodingController(GeocodingService geocodingService) : Con
     [HttpPost]
     [ProducesResponseType<GeocodeResponse>(StatusCodes.Status200OK)]
     [ProducesResponseType<ValidationProblemDetails>(StatusCodes.Status400BadRequest)]
-    public async Task<ActionResult<GeocodeResponse>> Geocode( GeocodeRequest request,  CancellationToken cancellationToken)
+    public async Task<ActionResult<GeocodeResponse>> Geocode(
+        GeocodeRequest request,
+        CancellationToken cancellationToken)
     {
         var validationErrors = Validate(request);
 

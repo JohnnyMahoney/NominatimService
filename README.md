@@ -28,6 +28,12 @@ postal:V5Z1M2
 
 Full-address lookup remains higher priority than postal-code cache lookup because it can return a more precise location. Not-found results are not cached.
 
+## Nominatim failures
+
+Each result has a `status` of `found`, `notFound`, or `failed`. A timeout, network error, non-success HTTP response, or invalid Nominatim JSON marks only the affected address as `failed`; processing continues for the remaining batch. Failure details are logged while the API returns a safe generic error message. Failed results are not cached.
+
+The outbound HTTP timeout is configured by `Nominatim:TimeoutSeconds`. Automatic retries are intentionally omitted because every retry consumes Nominatim rate-limit capacity and increases latency for all queued addresses.
+
 ## Production usage
 
 Public Nominatim and a local SQLite database are used for the scope of this assessment. For a production vehicle-tracking workload, the public usage policy would require an alternative provider or a self-hosted Nominatim instance. A horizontally scaled deployment would also require shared caching and distributed coordination for deduplication and rate limiting.

@@ -79,3 +79,11 @@ The lookup order is address cache, address Nominatim lookup, postal cache, and p
 Concurrent callers can miss the cache together, share one in-flight Nominatim task, and then attempt to persist the same result. `CacheKey` is the primary key and writes use SQLite `INSERT ... ON CONFLICT DO NOTHING`, making those writes idempotent without turning an expected concurrency race into an error.
 
 The cache has no expiration or invalidation policy in the assessment scope. A production system would need an explicit freshness policy, database maintenance and backup decisions, and a shared cache or database when running multiple application instances.
+
+## ADR-008: Isolate Transient Nominatim Failures Per Address
+
+**Status:** Implemented
+
+Nominatim timeout, network, non-success HTTP, and invalid-response failures are translated into a single application exception after structured logging in `NominatimClient`. `GeocodingService` catches that exception per address and returns `status: failed` with a safe generic message, then continues processing the remaining batch. `notFound` remains distinct from `failed`, and request cancellation is not converted into an upstream failure.
+
+The HTTP timeout is configurable through `Nominatim:TimeoutSeconds`. Failed operations never reach the successful-result cache write path. Automatic retries are deliberately omitted because they would consume the same global Nominatim rate-limit capacity, increase latency for all queued requests, and require a separate backoff policy. A production deployment could add bounded retries only if they remain behind the rate limiter and are supported by operational metrics.

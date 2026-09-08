@@ -26,6 +26,8 @@ builder.Services
         "Nominatim:UserAgent is required.")
     .Validate(options => options.MinimumRequestIntervalMilliseconds > 1000,
         "Nominatim:MinimumRequestIntervalMilliseconds must be greater than 1000.")
+    .Validate(options => options.TimeoutSeconds > 0,
+        "Nominatim:TimeoutSeconds must be greater than 0.")
     .ValidateOnStart();
 
 builder.Services.AddHttpClient(NominatimClient.HttpClientName, (serviceProvider, client) =>
@@ -34,6 +36,7 @@ builder.Services.AddHttpClient(NominatimClient.HttpClientName, (serviceProvider,
 
     client.BaseAddress = new Uri(options.BaseUrl);
     client.DefaultRequestHeaders.UserAgent.ParseAdd(options.UserAgent);
+    client.Timeout = TimeSpan.FromSeconds(options.TimeoutSeconds);
 });
 
 builder.Services.AddSingleton<NominatimClient>();
