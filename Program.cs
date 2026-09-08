@@ -3,6 +3,7 @@ using GeocoderSolution.Data;
 using GeocoderSolution.Services;
 using Microsoft.EntityFrameworkCore;
 using Microsoft.Extensions.Options;
+using NSwag.AspNetCore;
 
 var builder = WebApplication.CreateBuilder(args);
 
@@ -56,9 +57,9 @@ await using (var scope = app.Services.CreateAsyncScope())
 if (app.Environment.IsDevelopment())
 {
     app.MapOpenApi();
+    app.UseSwaggerUi(options => options.DocumentPath = "/openapi/v1.json");
 }
 
-app.UseHttpsRedirection();
 app.MapControllers();
 
 app.Run();
