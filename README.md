@@ -325,19 +325,3 @@ The automated suite focuses on behavior that is easy to get wrong:
 
 HTTP tests use deterministic message-handler stubs and cache tests use isolated SQLite databases. This keeps the suite fast, repeatable, and independent of public Nominatim availability and policy.
 
-## Production boundaries
-
-This is intentionally a single-instance home-task solution. Within one process it satisfies the assignment's concurrency, persistence, and rate-limit requirements without introducing Redis, queues, distributed locks, or external database setup.
-
-For a horizontally scaled production service, the main extensions would be:
-
-- distributed rate limiting and in-flight coordination across replicas;
-- a shared persistent cache with expiration and maintenance policies;
-- bounded retry/circuit-breaker policies aligned with provider quotas;
-- metrics, tracing, alerting, and health checks;
-- capacity limits for request batch size and queued outbound work;
-- explicit shutdown cancellation for shared operations;
-- HTTPS and authentication/authorization appropriate to the deployment;
-- review of the public Nominatim usage policy and likely use of a commercial provider or self-hosted Nominatim for sustained vehicle-tracking traffic.
-
-Those concerns are documented instead of adding infrastructure that is not required to demonstrate the requested behavior.
