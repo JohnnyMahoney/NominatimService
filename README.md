@@ -1,4 +1,4 @@
-# PosiTrace Forward Geocoding API
+# Nominatim Forward Geocoding API
 
 An ASP.NET Core Web API that accepts batches of Canadian street addresses and resolves them through the Nominatim Search API. The implementation covers address normalization, postal-code fallback, in-flight request deduplication, persistent SQLite caching, rate limiting, failure isolation, structured logging, and Swagger UI.
 
