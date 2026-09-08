@@ -3,11 +3,7 @@ using GeocoderSolution.DTOs;
 
 namespace GeocoderSolution.Services;
 
-public sealed class GeocodingService(
-    NominatimClient nominatimClient,
-    AddressNormalizer addressNormalizer,
-    CanadianPostalCodeExtractor postalCodeExtractor,
-    GeocodingCacheStore cacheStore)
+public sealed class GeocodingService(NominatimClient nominatimClient, AddressNormalizer addressNormalizer, CanadianPostalCodeExtractor postalCodeExtractor, GeocodingCacheStore cacheStore)
 {
     private const string NormalizedAddressStrategy = "normalizedAddress";
     private const string PostalCodeStrategy = "postalCode";
@@ -17,9 +13,7 @@ public sealed class GeocodingService(
     private const string UpstreamFailureMessage =
         "The geocoding provider is temporarily unavailable.";
 
-    public async Task<GeocodeResponse> GeocodeAsync(
-        GeocodeRequest request,
-        CancellationToken cancellationToken)
+    public async Task<GeocodeResponse> GeocodeAsync(GeocodeRequest request, CancellationToken cancellationToken)
     {
         var results = new List<GeocodeResult>(request.Addresses.Count);
 
@@ -31,91 +25,77 @@ public sealed class GeocodingService(
             }
             catch (NominatimUnavailableException)
             {
-                results.Add(CreateResult(
-                    input,
-                    FailedStatus,
-                    null,
-                    null,
-                    UpstreamFailureMessage));
+                results.Add(CreateFailedResult(input));
             }
         }
 
         return new GeocodeResponse(results);
     }
 
-    private async Task<GeocodeResult> GeocodeOneAsync(
-        AddressRequest input,
-        CancellationToken cancellationToken)
+    private async Task<GeocodeResult> GeocodeOneAsync(AddressRequest input, CancellationToken cancellationToken)
     {
         var normalizedAddress = addressNormalizer.Normalize(input.Address);
         var addressCacheKey = GeocodingCacheKeys.ForAddress(normalizedAddress);
         var cachedEntry = await cacheStore.GetAsync(addressCacheKey, cancellationToken);
-        NominatimPlace? place;
-        string? strategy;
 
         if (cachedEntry is not null)
         {
-            place = ToPlace(cachedEntry);
-            strategy = cachedEntry.Strategy;
+            return CreateFoundResult(
+                input,
+                ToPlace(cachedEntry),
+                cachedEntry.Strategy);
         }
-        else
-        {
-            place = await nominatimClient.SearchAsync(
-                normalizedAddress,
-                cancellationToken);
-            strategy = place is null ? null : NormalizedAddressStrategy;
 
-            if (place is not null)
-            {
-                await cacheStore.SaveAsync(
-                    addressCacheKey,
-                    place,
-                    NormalizedAddressStrategy,
-                    cancellationToken);
-            }
+        var place = await nominatimClient.SearchAsync(
+            normalizedAddress,
+            cancellationToken);
+
+        if (place is not null)
+        {
+            await cacheStore.SaveAsync(
+                addressCacheKey,
+                place,
+                NormalizedAddressStrategy,
+                cancellationToken);
+
+            return CreateFoundResult(
+                input,
+                place,
+                NormalizedAddressStrategy);
         }
+
+        var postalCode = postalCodeExtractor.Extract(input.Address);
+
+        if (postalCode is null)
+        {
+            return CreateNotFoundResult(input);
+        }
+
+        var postalCacheKey = GeocodingCacheKeys.ForPostalCode(postalCode);
+        cachedEntry = await cacheStore.GetAsync(postalCacheKey, cancellationToken);
+
+        if (cachedEntry is not null)
+        {
+            return CreateFoundResult(
+                input,
+                ToPlace(cachedEntry),
+                cachedEntry.Strategy);
+        }
+
+        place = await nominatimClient.SearchAsync(postalCode, cancellationToken);
 
         if (place is null)
         {
-            var postalCode = postalCodeExtractor.Extract(input.Address);
-
-            if (postalCode is not null)
-            {
-                var postalCacheKey = GeocodingCacheKeys.ForPostalCode(postalCode);
-                cachedEntry = await cacheStore.GetAsync(
-                    postalCacheKey,
-                    cancellationToken);
-
-                if (cachedEntry is not null)
-                {
-                    place = ToPlace(cachedEntry);
-                    strategy = cachedEntry.Strategy;
-                }
-                else
-                {
-                    place = await nominatimClient.SearchAsync(
-                        postalCode,
-                        cancellationToken);
-                    strategy = place is null ? null : PostalCodeStrategy;
-
-                    if (place is not null)
-                    {
-                        await cacheStore.SaveAsync(
-                            postalCacheKey,
-                            place,
-                            PostalCodeStrategy,
-                            cancellationToken);
-                    }
-                }
-            }
+            return CreateNotFoundResult(input);
         }
 
-        return CreateResult(
-            input,
-            place is null ? NotFoundStatus : FoundStatus,
+        await cacheStore.SaveAsync(
+            postalCacheKey,
             place,
-            strategy,
-            null);
+            PostalCodeStrategy,
+            cancellationToken);
+
+        return CreateFoundResult(input, place, PostalCodeStrategy);
     }
 
     private static NominatimPlace ToPlace(GeocodingCacheEntry entry)
@@ -127,23 +107,44 @@ public sealed class GeocodingService(
             entry.DisplayName);
     }
 
-    private static GeocodeResult CreateResult(
-        AddressRequest input,
-        string status,
-        NominatimPlace? place,
-        string? strategy,
-        string? error)
+    private static GeocodeResult CreateFoundResult(AddressRequest input, NominatimPlace place, string strategy)
     {
         return new GeocodeResult(
             input.Id,
             input.Address,
-            status,
-            place is not null,
+            FoundStatus,
+            true,
             strategy,
-            place?.Latitude,
-            place?.Longitude,
-            place?.Name,
-            place?.DisplayName,
-            error);
+            place.Latitude,
+            place.Longitude,
+            place.Name,
+            place.DisplayName,
+            null);
     }
+
+    private static GeocodeResult CreateNotFoundResult(AddressRequest input) =>
+        new(
+            input.Id,
+            input.Address,
+            NotFoundStatus,
+            false,
+            null,
+            null,
+            null,
+            null,
+            null,
+            null);
+
+    private static GeocodeResult CreateFailedResult(AddressRequest input) =>
+        new(
+            input.Id,
+            input.Address,
+            FailedStatus,
+            false,
+            null,
+            null,
+            null,
+            null,
+            null,
+            UpstreamFailureMessage);
 }

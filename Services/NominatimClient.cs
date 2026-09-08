@@ -20,10 +20,7 @@ public sealed class NominatimClient : IDisposable
     private readonly TimeSpan _minimumRequestInterval;
     private long? _lastRequestTimestamp;
 
-    public NominatimClient(
-        IHttpClientFactory httpClientFactory,
-        IOptions<NominatimOptions> options,
-        ILogger<NominatimClient> logger)
+    public NominatimClient(IHttpClientFactory httpClientFactory, IOptions<NominatimOptions> options, ILogger<NominatimClient> logger)
     {
         _httpClientFactory = httpClientFactory;
         _logger = logger;
@@ -37,14 +34,13 @@ public sealed class NominatimClient : IDisposable
         cancellationToken.ThrowIfCancellationRequested();
 
         var key = NormalizeDeduplicationKey(address);
-        Lazy<Task<NominatimPlace?>>? newEntry = null;
-        newEntry = new Lazy<Task<NominatimPlace?>>(
-            () => SearchAndRemoveAsync(key, address, newEntry!),
+        var newEntry = new Lazy<Task<NominatimPlace?>>(
+            () => SearchAndRemoveAsync(key, address),
             LazyThreadSafetyMode.ExecutionAndPublication);
 
-        var inFlightEntry = _inFlight.GetOrAdd(key, newEntry);
+        var entry = _inFlight.GetOrAdd(key, newEntry);
 
-        if (!ReferenceEquals(inFlightEntry, newEntry))
+        if (!ReferenceEquals(entry, newEntry))
         {
             _logger.LogInformation(
                 "Reusing in-flight Nominatim request for query {Query}; key {DeduplicationKey}",
@@ -52,13 +48,10 @@ public sealed class NominatimClient : IDisposable
                 key);
         }
 
-        return await inFlightEntry.Value.WaitAsync(cancellationToken);
+        return await entry.Value.WaitAsync(cancellationToken);
     }
 
-    private async Task<NominatimPlace?> SearchAndRemoveAsync(
-        string key,
-        string address,
-        Lazy<Task<NominatimPlace?>> entry)
+    private async Task<NominatimPlace?> SearchAndRemoveAsync(string key, string address)
     {
         try
         {
@@ -67,14 +60,11 @@ public sealed class NominatimClient : IDisposable
         }
         finally
         {
-            ((ICollection<KeyValuePair<string, Lazy<Task<NominatimPlace?>>>>)_inFlight)
-                .Remove(new KeyValuePair<string, Lazy<Task<NominatimPlace?>>>(key, entry));
+            _inFlight.TryRemove(key, out _);
         }
     }
 
-    private async Task<NominatimPlace?> SendSearchAsync(
-        string address,
-        CancellationToken cancellationToken)
+    private async Task<NominatimPlace?> SendSearchAsync(string address, CancellationToken cancellationToken)
     {
         await _requestGate.WaitAsync(cancellationToken);
 

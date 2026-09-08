@@ -2,8 +2,7 @@ using Microsoft.EntityFrameworkCore;
 
 namespace GeocoderSolution.Data;
 
-public sealed class GeocodingCacheDbContext(
-    DbContextOptions<GeocodingCacheDbContext> options) : DbContext(options)
+public sealed class GeocodingCacheDbContext(DbContextOptions<GeocodingCacheDbContext> options) : DbContext(options)
 {
     public DbSet<GeocodingCacheEntry> GeocodingCacheEntries =>
         Set<GeocodingCacheEntry>();

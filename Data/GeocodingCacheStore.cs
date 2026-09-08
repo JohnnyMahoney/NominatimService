@@ -3,13 +3,9 @@ using Microsoft.EntityFrameworkCore;
 
 namespace GeocoderSolution.Data;
 
-public sealed class GeocodingCacheStore(
-    GeocodingCacheDbContext dbContext,
-    ILogger<GeocodingCacheStore> logger)
+public sealed class GeocodingCacheStore(GeocodingCacheDbContext dbContext, ILogger<GeocodingCacheStore> logger)
 {
-    public async Task<GeocodingCacheEntry?> GetAsync(
-        string cacheKey,
-        CancellationToken cancellationToken)
+    public async Task<GeocodingCacheEntry?> GetAsync(string cacheKey, CancellationToken cancellationToken)
     {
         var entry = await dbContext.GeocodingCacheEntries
             .AsNoTracking()
@@ -29,11 +25,7 @@ public sealed class GeocodingCacheStore(
         return entry;
     }
 
-    public async Task SaveAsync(
-        string cacheKey,
-        NominatimPlace place,
-        string strategy,
-        CancellationToken cancellationToken)
+    public async Task SaveAsync(string cacheKey, NominatimPlace place, string strategy, CancellationToken cancellationToken)
     {
         var createdAt = DateTimeOffset.UtcNow;
 

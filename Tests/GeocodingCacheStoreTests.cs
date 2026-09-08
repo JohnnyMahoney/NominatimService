@@ -58,9 +58,7 @@ public sealed class GeocodingCacheStoreTests
     [Theory]
     [InlineData("V5Z 1M2", "postal:V5Z1M2")]
     [InlineData("v5z1m2", "postal:V5Z1M2")]
-    public void ForPostalCode_CreatesCanonicalNamespacedKey(
-        string postalCode,
-        string expected)
+    public void ForPostalCode_CreatesCanonicalNamespacedKey(string postalCode, string expected)
     {
         Assert.Equal(expected, GeocodingCacheKeys.ForPostalCode(postalCode));
     }
@@ -74,8 +72,7 @@ public sealed class GeocodingCacheStoreTests
         return new GeocodingCacheDbContext(options);
     }
 
-    private static GeocodingCacheStore CreateStore(
-        GeocodingCacheDbContext dbContext)
+    private static GeocodingCacheStore CreateStore(GeocodingCacheDbContext dbContext)
     {
         return new GeocodingCacheStore(
             dbContext,

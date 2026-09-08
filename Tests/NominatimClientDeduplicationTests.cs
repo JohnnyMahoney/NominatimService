@@ -84,9 +84,7 @@ public sealed class NominatimClientDeduplicationTests
         Assert.Equal(2, handler.RequestCount);
     }
 
-    private static NominatimClient CreateClient(
-        HttpClient httpClient,
-        ILogger<NominatimClient> logger)
+    private static NominatimClient CreateClient(HttpClient httpClient, ILogger<NominatimClient> logger)
     {
         return new NominatimClient(
             new StubHttpClientFactory(httpClient),
@@ -126,9 +124,7 @@ public sealed class NominatimClientDeduplicationTests
 
         public void CompleteRequest() => _releaseRequest.TrySetResult();
 
-        protected override async Task<HttpResponseMessage> SendAsync(
-            HttpRequestMessage request,
-            CancellationToken cancellationToken)
+        protected override async Task<HttpResponseMessage> SendAsync(HttpRequestMessage request, CancellationToken cancellationToken)
         {
             Interlocked.Increment(ref _requestCount);
             _requestStarted.TrySetResult();
@@ -148,9 +144,7 @@ public sealed class NominatimClientDeduplicationTests
 
         public int RequestCount => Volatile.Read(ref _requestCount);
 
-        protected override Task<HttpResponseMessage> SendAsync(
-            HttpRequestMessage request,
-            CancellationToken cancellationToken)
+        protected override Task<HttpResponseMessage> SendAsync(HttpRequestMessage request, CancellationToken cancellationToken)
         {
             var requestNumber = Interlocked.Increment(ref _requestCount);
             var response = requestNumber == 1
@@ -177,12 +171,7 @@ public sealed class NominatimClientDeduplicationTests
 
         public bool IsEnabled(LogLevel logLevel) => true;
 
-        public void Log<TState>(
-            LogLevel logLevel,
-            EventId eventId,
-            TState state,
-            Exception? exception,
-            Func<TState, Exception?, string> formatter)
+        public void Log<TState>(LogLevel logLevel, EventId eventId, TState state, Exception? exception, Func<TState, Exception?, string> formatter)
         {
             _messages.Enqueue(formatter(state, exception));
         }

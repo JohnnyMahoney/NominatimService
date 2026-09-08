@@ -221,13 +221,7 @@ public sealed class GeocodingServiceFallbackTests
             sqliteConnection);
     }
 
-    private sealed class TestFixture(
-        GeocodingService service,
-        NominatimClient client,
-        HttpClient httpClient,
-        IReadOnlyList<string> queries,
-        GeocodingCacheDbContext dbContext,
-        SqliteConnection sqliteConnection) : IDisposable
+    private sealed class TestFixture(GeocodingService service, NominatimClient client, HttpClient httpClient, IReadOnlyList<string> queries, GeocodingCacheDbContext dbContext, SqliteConnection sqliteConnection) : IDisposable
     {
         public GeocodingService Service { get; } = service;
         public IReadOnlyList<string> Queries { get; } = queries;
@@ -255,9 +249,7 @@ public sealed class GeocodingServiceFallbackTests
 
         public List<string> Queries { get; } = [];
 
-        protected override Task<HttpResponseMessage> SendAsync(
-            HttpRequestMessage request,
-            CancellationToken cancellationToken)
+        protected override Task<HttpResponseMessage> SendAsync(HttpRequestMessage request, CancellationToken cancellationToken)
         {
             Queries.Add(GetQueryValue(request.RequestUri!, "q"));
             var responseBody = _responses.Dequeue();
