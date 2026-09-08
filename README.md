@@ -65,11 +65,8 @@ The complete manual evaluation set is available in [`address-test-case.json`](ad
 
 ### Postman
 
-> Add the Postman request/response screenshot here, for example as `docs/images/postman-geocode.png`.
+><img width="2196" height="1307" alt="image" src="https://github.com/user-attachments/assets/af57de84-a872-40e1-a9db-512effa5e3df" />
 
-<!-- After adding the image, replace the blockquote above with:
-![Successful batch geocoding response in Postman](docs/images/postman-geocode.png)
--->
 
 ### Swagger UI
 
