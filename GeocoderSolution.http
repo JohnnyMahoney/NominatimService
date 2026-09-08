@@ -1,0 +1,19 @@
+@GeocoderSolution_HostAddress = http://localhost:5236
+
+POST {{GeocoderSolution_HostAddress}}/geocode
+Content-Type: application/json
+
+{
+  "addresses": [
+    {
+      "id": "1",
+      "address": "453 West 12th Avenue, Vancouver, BC"
+    },
+    {
+      "id": "2",
+      "address": "999999 Fake Road, Vancouver, BC"
+    }
+  ]
+}
+
+###

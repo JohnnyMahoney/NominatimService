@@ -1,0 +1,68 @@
+{
+  "addresses": [
+    {
+      "id": "canonical-full",
+      "address": "453 West 12th Avenue, Vancouver, BC V5Y 1V4"
+    },
+    {
+      "id": "without-postcode",
+      "address": "453 West 12th Avenue, Vancouver, BC"
+    },
+    {
+      "id": "abbreviated",
+      "address": "453 W 12th Ave, Vancouver, BC V5Y 1V4"
+    },
+    {
+      "id": "lowercase",
+      "address": "453 west 12th avenue, vancouver, bc v5y 1v4"
+    },
+    {
+      "id": "extra-spaces",
+      "address": "453   West 12th Avenue,   Vancouver, BC   V5Y 1V4"
+    },
+    {
+      "id": "apt-dot",
+      "address": "Apt. 42, 453 West 12th Avenue, Vancouver, BC V5Y 1V4"
+    },
+    {
+      "id": "apt-no-dot",
+      "address": "Apt 42, 453 West 12th Avenue, Vancouver, BC V5Y 1V4"
+    },
+    {
+      "id": "unit",
+      "address": "Unit 42, 453 West 12th Avenue, Vancouver, BC V5Y 1V4"
+    },
+    {
+      "id": "suite",
+      "address": "Suite 42, 453 West 12th Avenue, Vancouver, BC V5Y 1V4"
+    },
+    {
+      "id": "hash-unit",
+      "address": "#42, 453 West 12th Avenue, Vancouver, BC V5Y 1V4"
+    },
+    {
+      "id": "dash-unit",
+      "address": "453-42 West 12th Avenue, Vancouver, BC V5Y 1V4"
+    },
+    {
+      "id": "punctuation-mess",
+      "address": "453 W. 12th Ave.,Vancouver,BC,V5Y1V4"
+    },
+    {
+      "id": "minor-typo",
+      "address": "453 West 12th Aveneu, Vancouver, BC V5Y 1V4"
+    },
+    {
+      "id": "postcode-only",
+      "address": "V5Y 1V4"
+    },
+    {
+      "id": "postcode-no-space",
+      "address": "V5Y1V4"
+    },
+    {
+      "id": "bad-address-valid-postcode",
+      "address": "999999 Totally Fake Road, Vancouver, BC V5Y 1V4"
+    }
+  ]
+}
