@@ -85,7 +85,7 @@ The assignment and the supplied documentation are the source of truth for this i
 
 If supporting guidance conflicts with the assignment, the assignment wins.
 
-Codex was used as the implementation agent after receiving the Nominatim Search use case, the assignment requirements, and the relevant project context. [`SKILL.md`](SKILL.md) records the project-specific constraints and working guidance supplied to the agent. Work was performed in small, reviewable slices under explicit human direction rather than as one broad generation step.
+Codex was used as the implementation agent after receiving the Nominatim Search use case, the assignment requirements, and the relevant project context. [`SKILL.md`](SKILL.md) records the project-specific constraints and working guidance supplied to the agent. Work was performed in small, reviewable slices.
 
 Important decisions and trade-offs encountered during those slices are documented in the ADR-like [`thought-process.md`](thought-process.md). It includes the normalization and fallback evaluation, deduplication placement, concurrency boundaries, cache design, and failure-handling decisions. This keeps the README focused on the final system while preserving the reasoning that led to it.
 
