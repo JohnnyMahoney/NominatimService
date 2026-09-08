@@ -70,11 +70,10 @@ The complete manual evaluation set is available in [`address-test-case.json`](ad
 
 ### Swagger UI
 
-> Add the Swagger UI screenshot here, for example as `docs/images/swagger-ui.png`.
+> <img width="1008" height="1102" alt="image" src="https://github.com/user-attachments/assets/a75f1c9b-64a3-4249-a97a-32868972ee85" />
+<img width="1019" height="1025" alt="image" src="https://github.com/user-attachments/assets/de9f96c1-faf8-4dea-9531-8719e9fd3dfc" />
 
-<!-- After adding the image, replace the blockquote above with:
-![Geocoding endpoint in Swagger UI](docs/images/swagger-ui.png)
--->
+
 
 ## Source of truth and development approach
 
